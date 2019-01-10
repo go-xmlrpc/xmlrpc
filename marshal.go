@@ -6,53 +6,52 @@ import (
 	"github.com/pkg/errors"
 )
 
-type MethodCall struct {
+type methodCall struct {
 	XMLName xml.Name `xml:"methodCall"`
 
 	Name   string        `xml:"methodName"`
 	Params []interface{} `xml:"params>param,omitempty"`
 }
 
-type IntParam struct {
+type intParam struct {
 	Value int `xml:"value>int"`
 }
 
-type StringParam struct {
+type stringParam struct {
 	Value string `xml:"value>string"`
 }
 
-type DoubleParam struct {
+type doubleParam struct {
 	Value float64 `xml:"value>double"`
 }
 
-type ArrayParam struct {
+type arrayParam struct {
 	Values []interface{} `xml:"value>array>data"`
 }
 
-func NewParam(data interface{}) (interface{}, error) {
-	// TODO: Allow this to be extended if the type passed in implements the
-	// proper Marshal and Unmarshal methods.
+func newParam(data interface{}) (interface{}, error) {
+	// TODO: Add support for additional types
 
 	switch v := data.(type) {
 	case int:
-		return IntParam{Value: v}, nil
+		return intParam{Value: v}, nil
 	case float32:
-		return DoubleParam{Value: float64(v)}, nil
+		return doubleParam{Value: float64(v)}, nil
 	case float64:
-		return DoubleParam{Value: v}, nil
+		return doubleParam{Value: v}, nil
 	case string:
-		return StringParam{Value: v}, nil
+		return stringParam{Value: v}, nil
 	default:
 		return nil, errors.Errorf("unknown param type: %T", v)
 	}
 }
 
 func Marshal(name string, args ...interface{}) ([]byte, error) {
-	out := &MethodCall{
+	out := &methodCall{
 		Name: name,
 	}
 	for _, arg := range args {
-		param, err := NewParam(arg)
+		param, err := newParam(arg)
 		if err != nil {
 			return nil, errors.Wrap(err, "xmlrpc: marshal")
 		}
